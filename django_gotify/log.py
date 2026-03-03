@@ -1,5 +1,4 @@
 import logging
-from typing import override
 
 from django.conf import settings
 from gotify import Gotify
@@ -18,7 +17,6 @@ class GotifyLogHandler(logging.Handler):
             client_token=self.client_token,
         )
 
-    @override
     def emit(self, record):
         try:
             # Форматируем сообщение согласно настройкам логгера

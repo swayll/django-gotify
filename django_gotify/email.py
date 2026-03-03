@@ -1,5 +1,4 @@
 import threading
-from typing import override
 
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
@@ -8,7 +7,6 @@ from gotify import Gotify
 
 
 class GotifyEmailBackend(BaseEmailBackend):
-    @override
     def __init__(
         self,
         fail_silently=False,
@@ -31,7 +29,6 @@ class GotifyEmailBackend(BaseEmailBackend):
             client_token=self.client_token,
         )
 
-    @override
     def open(self):
         try:
             self.gotify.get_health()
@@ -55,7 +52,6 @@ class GotifyEmailBackend(BaseEmailBackend):
             title=title,
         )
 
-    @override
     def send_messages(self, email_messages):
         if not email_messages:
             return 0
