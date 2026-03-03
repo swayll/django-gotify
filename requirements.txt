@@ -1,2 +1,2 @@
 gotify>=0.5.0
-django
+django>=4.2
