@@ -18,7 +18,7 @@ class GotifyEmailBackend(BaseEmailBackend):
         super().__init__(fail_silently=fail_silently, **kwargs)
         self._lock = threading.RLock()
 
-        # Получаем настройки динамически, чтобы избежать ошибок при инициализации Django
+        # Get settings dynamically to avoid errors during Django initialization
         self.base_url = base_url or getattr(settings, "GOTIFY_URL", "")
         self.app_token = app_token or getattr(settings, "GOTIFY_TOKEN", "")
         self.client_token = client_token or getattr(settings, "GOTIFY_CLIENT", "")
@@ -39,7 +39,6 @@ class GotifyEmailBackend(BaseEmailBackend):
             return False
 
     def write_message(self, message, default_subject="No Subject"):
-        # Исправлена синтаксическая ошибка с тернарным оператором
         body = str(message.body) if isinstance(message, EmailMessage) else str(message)
         title = (
             str(message.subject)
@@ -47,9 +46,30 @@ class GotifyEmailBackend(BaseEmailBackend):
             else str(default_subject)
         )
 
+        priority = None
+        extras = None
+
+        if isinstance(message, EmailMessage):
+            # Extract priority from headers if it exists
+            priority_str = message.extra_headers.get("X-Gotify-Priority")
+            if priority_str:
+                try:
+                    priority = int(priority_str)
+                except (ValueError, TypeError):
+                    pass
+
+            # Markdown support
+            if (
+                message.content_subtype == "markdown"
+                or message.extra_headers.get("X-Gotify-Markdown", "").lower() == "true"
+            ):
+                extras = {"client::display": {"contentType": "text/markdown"}}
+
         return self.gotify.create_message(
             message=body,
             title=title,
+            priority=priority,
+            extras=extras,
         )
 
     def send_messages(self, email_messages):
