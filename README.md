@@ -1,4 +1,8 @@
 # Django Gotify
+[![Django CI](https://github.com/swayll/django-gotify/actions/workflows/django.yml/badge.svg)](https://github.com/swayll/django-gotify/actions/workflows/django.yml)
+[![PyPI version](https://img.shields.io/pypi/v/django-gotify.svg)](https://pypi.org/project/django-gotify/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/django-gotify.svg)](https://pypi.org/project/django-gotify/)
+[![License](https://img.shields.io/pypi/l/django-gotify.svg)](https://github.com/swayll/django-gotify/blob/main/LICENSE)
 
 **Self-hosted push notifications and alerting for your Django projects.**
 
