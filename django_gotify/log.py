@@ -19,11 +19,9 @@ class GotifyLogHandler(logging.Handler):
 
     def emit(self, record):
         try:
-            # Форматируем сообщение согласно настройкам логгера
             msg = self.format(record)
             title = f"Django Log: {record.levelname} - {record.name}"
 
-            # Настраиваем приоритет для Gotify (от 1 до 10)
             priority = 5
             if record.levelno >= logging.CRITICAL:
                 priority = 9
@@ -34,5 +32,4 @@ class GotifyLogHandler(logging.Handler):
 
             self.gotify.create_message(message=msg, title=title, priority=priority)
         except Exception:
-            # Стандартный механизм обработки ошибок логирования в Python
             self.handleError(record)
