@@ -98,4 +98,4 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ## 📄 License
 
-[MIT](https://www.google.com/search?q=https://github.com/swayll/django-gotify/LICENSE)
+[MIT](https://github.com/swayll/django-gotify/blob/main/LICENSE)
