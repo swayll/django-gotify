@@ -10,7 +10,7 @@ from django_gotify.email import GotifyEmailBackend
 class GotifyBackendTest(TestCase):
     @patch("django_gotify.email.Gotify")
     def test_send_email_calls_gotify(self, MockGotify):
-        """Проверка, что send_mail вызывает метод create_message в Gotify"""
+        """Check that send_mail calls create_message in Gotify"""
         mock_instance = MockGotify.return_value
 
         # Отправляем письмо через наш бэкенд
@@ -24,12 +24,36 @@ class GotifyBackendTest(TestCase):
 
         # Проверяем, что Gotify.create_message был вызван с правильными аргументами
         mock_instance.create_message.assert_called_once_with(
-            message="Test Body", title="Test Subject"
+            message="Test Body", title="Test Subject", priority=None, extras=None
+        )
+
+    @patch("django_gotify.email.Gotify")
+    def test_send_email_with_priority_and_markdown(self, MockGotify):
+        """Check that priority and Markdown headers are passed to Gotify"""
+        mock_instance = MockGotify.return_value
+
+        from django.core.mail import EmailMessage
+
+        msg = EmailMessage(
+            "Markdown Subject",
+            "**Bold** message",
+            "from@example.com",
+            ["to@example.com"],
+            headers={"X-Gotify-Priority": "7", "X-Gotify-Markdown": "true"},
+        )
+        msg.connection = GotifyEmailBackend()
+        msg.send()
+
+        mock_instance.create_message.assert_called_once_with(
+            message="**Bold** message",
+            title="Markdown Subject",
+            priority=7,
+            extras={"client::display": {"contentType": "text/markdown"}},
         )
 
     @patch("django_gotify.log.Gotify")
     def test_logging_handler_calls_gotify(self, MockGotify):
-        """Проверка, что логгер отправляет сообщения в Gotify"""
+        """Check that the logger sends messages to Gotify"""
         mock_instance = MockGotify.return_value
         from django_gotify.log import GotifyLogHandler
 
