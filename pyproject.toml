@@ -1,3 +1,21 @@
 [build-system]
 requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["N803", "N806", "B017"]
+"runtests.py" = ["N806"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true

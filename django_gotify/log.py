@@ -1,7 +1,8 @@
 import logging
 
 from django.conf import settings
-from gotify import Gotify
+
+from .utils import get_gotify_client
 
 
 class GotifyLogHandler(logging.Handler):
@@ -11,7 +12,7 @@ class GotifyLogHandler(logging.Handler):
         self.app_token = app_token or getattr(settings, "GOTIFY_TOKEN", "")
         self.client_token = client_token or getattr(settings, "GOTIFY_CLIENT", "")
 
-        self.gotify = Gotify(
+        self.gotify = get_gotify_client(
             base_url=self.base_url,
             app_token=self.app_token,
             client_token=self.client_token,

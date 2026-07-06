@@ -3,7 +3,8 @@ import threading
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.message import EmailMessage
-from gotify import Gotify
+
+from .utils import get_gotify_client
 
 
 class GotifyEmailBackend(BaseEmailBackend):
@@ -22,7 +23,7 @@ class GotifyEmailBackend(BaseEmailBackend):
         self.app_token = app_token or getattr(settings, "GOTIFY_TOKEN", "")
         self.client_token = client_token or getattr(settings, "GOTIFY_CLIENT", "")
 
-        self.gotify = Gotify(
+        self.gotify = get_gotify_client(
             base_url=self.base_url,
             app_token=self.app_token,
             client_token=self.client_token,
@@ -39,11 +40,7 @@ class GotifyEmailBackend(BaseEmailBackend):
 
     def _write_message(self, message, default_subject="No Subject"):
         body = str(message.body) if isinstance(message, EmailMessage) else str(message)
-        title = (
-            str(message.subject)
-            if isinstance(message, EmailMessage)
-            else str(default_subject)
-        )
+        title = str(message.subject) if isinstance(message, EmailMessage) else str(default_subject)
 
         priority = None
         extras = None
