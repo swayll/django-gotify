@@ -37,7 +37,7 @@ class GotifyEmailBackend(BaseEmailBackend):
                 raise e
             return False
 
-    def write_message(self, message, default_subject="No Subject"):
+    def _write_message(self, message, default_subject="No Subject"):
         body = str(message.body) if isinstance(message, EmailMessage) else str(message)
         title = (
             str(message.subject)
@@ -80,7 +80,7 @@ class GotifyEmailBackend(BaseEmailBackend):
 
             for message in email_messages:
                 try:
-                    self.write_message(message)
+                    self._write_message(message)
                     msg_count += 1
                 except Exception as e:
                     if not self.fail_silently:

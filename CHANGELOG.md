@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0] - 2026-07-06
+
+### Added
+- `AppConfig` (`django_gotify.apps.DjangoGotifyConfig`) for proper Django integration.
+- Management command `check_gotify` to verify Gotify server connectivity.
+- Public exports from `django_gotify`: `GotifyEmailBackend`, `GotifyLogHandler`.
+- Comprehensive test coverage: fail_silently, log priority levels (DEBUG→CRITICAL), management command.
+
+### Changed
+- `GotifyEmailBackend.write_message` renamed to `_write_message` (private API).
+
 ## [0.1.0] - 2024-05-22
 
 ### Added
