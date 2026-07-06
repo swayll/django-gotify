@@ -22,7 +22,7 @@ def check_connection(base_url=None, app_token=None, client_token=None):
         return False, "GOTIFY_TOKEN is not configured.", None
 
     try:
-        gotify = Gotify(
+        gotify = get_gotify_client(
             base_url=base_url,
             app_token=app_token,
             client_token=client_token,
