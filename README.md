@@ -6,44 +6,46 @@
 
 **Self-hosted push notifications and alerting for your Django projects.**
 
-`django-gotify` is a lightweight package that integrates your Django application with a [Gotify](https://gotify.net/) server. It provides a custom Email Backend to send standard Django emails as push notifications, and a built-in Logging Handler to instantly alert your devices about server errors and warnings.
+`django-gotify` is a lightweight package that integrates your Django application with a [Gotify](https://gotify.net/) server. It provides a custom Email Backend to send standard Django emails as push notifications, a built-in Logging Handler to instantly alert your devices about server errors and warnings, and a management command to verify your Gotify connection.
 
-## 🚀 Features
+## Features
 
 * **Email Backend Integration**: Acts as a drop-in replacement for Django's default email backend. Send notifications using standard `send_mail()` calls.
 * **Smart Logging Handler**: Automatically routes Django logs to Gotify. It intelligently maps Python log levels (DEBUG, ERROR, CRITICAL) to Gotify message priorities.
+* **Connection Check**: `check_gotify` management command verifies connectivity to your Gotify server.
+* **Programmatic API**: `check_connection()` and `get_gotify_client()` — reusable functions to verify connectivity and construct clients from any Python code.
 * **Thread-Safe**: Safely processes and sends multiple messages concurrently.
 * **Fail Silently Support**: Respects Django's `fail_silently` flag to prevent notification errors from crashing your application.
+* **Markdown Support**: Send formatted messages via `X-Gotify-Markdown` header or `markdown` content subtype.
 
-## 📦 Installation
+## Installation
 
 Install via pip:
 
 ```bash
 pip install django-gotify
-
 ```
 
-*(Note: You do not need to add this to `INSTALLED_APPS` since it only provides backend classes and handlers).*
+*(Note: You only need to add `'django_gotify'` to `INSTALLED_APPS` temporarily to use the `check_gotify` management command. For normal backend/handler usage it is not required.)*
 
-## 🛠 Configuration & Usage
+## Configuration
 
 Add your Gotify server credentials to your `settings.py`:
 
 ```python
 GOTIFY_URL = 'http://127.0.0.1:6543'
-GOTIFY_TOKEN = 'your_app_token'       # For logging
-GOTIFY_CLIENT = 'your_client_token'   # Optional
-
+GOTIFY_TOKEN = 'your_app_token'       # For logging and create_message
+GOTIFY_CLIENT = 'your_client_token'   # Optional, for client-authenticated endpoints
 ```
 
-### 1. Using as an Email Backend
+## Usage
+
+### 1. Email Backend
 
 To route all outgoing Django emails to Gotify, update your email backend in `settings.py`:
 
 ```python
-EMAIL_BACKEND = 'django_gotify.email.GotifyEmailBackend'
-
+EMAIL_BACKEND = 'django_gotify.GotifyEmailBackend'
 ```
 
 Now, anytime you use Django's `send_mail()`, it will appear as a push notification:
@@ -55,12 +57,11 @@ send_mail(
     subject="New User Registration",
     message="A new user just signed up on the platform.",
     from_email=None,
-    recipient_list=[], # Not required for Gotify
+    recipient_list=[],  # Not required for Gotify
 )
-
 ```
 
-### 2. Using as a Logging Handler
+### 2. Logging Handler
 
 To get real-time alerts for server errors, add the Gotify handler to your `LOGGING` configuration in `settings.py`:
 
@@ -71,7 +72,7 @@ LOGGING = {
     'handlers': {
         'gotify': {
             'level': 'ERROR',
-            'class': 'django_gotify.log.GotifyLogHandler',
+            'class': 'django_gotify.GotifyLogHandler',
         },
     },
     'loggers': {
@@ -82,20 +83,95 @@ LOGGING = {
         },
     },
 }
-
 ```
 
-## 💡 How it helps
+Log levels are automatically mapped to Gotify priorities:
 
-Instead of paying for third-party SMS services or cluttering your inbox with automated server emails, you can:
+| Python level | Gotify priority |
+|---|---|
+| DEBUG | 2 |
+| INFO, WARNING | 5 |
+| ERROR | 8 |
+| CRITICAL | 9 |
 
-* **Monitor Errors Instantly**: Get a push notification on your phone the second an `HTTP 500` error occurs in production.
-* **Simplify Alerts**: Trigger internal admin alerts (like "New Order Received") using Django's familiar `send_mail` functions without actually setting up an SMTP server.
+### 3. Connection Check
 
-## 🤝 Contributing
+#### Management command
 
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+Temporarily add `'django_gotify'` to `INSTALLED_APPS`, then run:
 
-## 📄 License
+```bash
+python manage.py check_gotify
+```
+
+The command validates that `GOTIFY_URL` and `GOTIFY_TOKEN` are configured and verifies connectivity to your Gotify server. If settings are missing, it prints guidance on how to configure them.
+
+#### Programmatic API
+
+Use from any Python code without adding to `INSTALLED_APPS`:
+
+```python
+from django_gotify import check_connection, get_gotify_client
+
+# Verify connectivity
+ok, message, health = check_connection()
+if not ok:
+    print(f"Gotify is not reachable: {message}")
+
+# Get a configured client
+client = get_gotify_client()
+client.create_message(
+    message="Hello from code!",
+    title="Programmatic Message",
+    priority=5,
+)
+```
+
+### 4. Message Priority & Markdown
+
+Control priority and formatting via `EmailMessage` headers:
+
+```python
+from django.core.mail import EmailMessage
+
+msg = EmailMessage(
+    subject="**Important** alert",
+    body="Server disk usage exceeded **90%**",
+    to=["ops@example.com"],
+    headers={
+        "X-Gotify-Priority": "8",
+        "X-Gotify-Markdown": "true",
+    },
+)
+msg.send()
+```
+
+Alternatively, use `content_subtype="markdown"` on the message.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+### Development setup
+
+```bash
+git clone https://github.com/swayll/django-gotify.git
+cd django-gotify
+python -m venv venv && source venv/bin/activate
+pip install -e .
+pip install -r requirements.txt
+pre-commit install
+```
+
+### Running checks
+
+```bash
+python runtests.py                 # Run test suite
+ruff check .                       # Lint
+ruff format --check .              # Format check
+ruff format .                      # Auto-format
+```
+
+## License
 
 [MIT](https://github.com/swayll/django-gotify/blob/main/LICENSE)
